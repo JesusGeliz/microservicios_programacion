@@ -20,6 +20,20 @@ public class ValidarService {
         return edad >= 18;
     }
 
+    public static boolean validarNoSoloNumeros(String texto) {
+        if (texto == null || texto.isEmpty()) {
+            return false;
+        }
+        return !texto.matches("\\d+");
+    }
+
+    public static boolean validarLongitudMaxima(String texto, int longitudMaxima) {
+        if (texto == null) {
+            return false;
+        }
+        return texto.length() <= longitudMaxima;
+    }
+
     public static boolean validarCampoObligatorio(String texto) {
         return texto != null && !texto.trim().isEmpty();
     }
