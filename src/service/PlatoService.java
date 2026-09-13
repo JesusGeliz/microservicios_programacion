@@ -7,6 +7,7 @@ import model.Usuario;
 import repository.PlatoRepository;
 import repository.RestauranteRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlatoService {
@@ -101,5 +102,39 @@ public class PlatoService {
 
     public List<Plato> getPlatos() {
         return platoRepository.getPlatos();
+    }
+
+    public List<Plato> listarPlatosPorRestaurante(Long idRestaurante, String categoria, int pagina, int tamanioPagina) {
+        List<Plato> platosFiltrados = new ArrayList<>();
+
+        for (Plato plato : platoRepository.getPlatos()) {
+            if (!plato.getIdRestaurante().equals(idRestaurante)) {
+                continue;
+            }
+            if (!plato.isActivo()) {
+                continue;
+            }
+            if (categoria != null && !categoria.isEmpty() && !plato.getCategoria().equalsIgnoreCase(categoria)) {
+                continue;
+            }
+            platosFiltrados.add(plato);
+        }
+
+        List<Plato> resultado = new ArrayList<>();
+        int inicio = (pagina - 1) * tamanioPagina;
+        if (inicio < 0 || inicio >= platosFiltrados.size()) {
+            return resultado;
+        }
+
+        int fin = inicio + tamanioPagina;
+        if (fin > platosFiltrados.size()) {
+            fin = platosFiltrados.size();
+        }
+
+        for (int i = inicio; i < fin; i++) {
+            resultado.add(platosFiltrados.get(i));
+        }
+
+        return resultado;
     }
 }
