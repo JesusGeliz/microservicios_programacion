@@ -1,7 +1,9 @@
 package service;
 
+import model.Restaurante;
 import model.Rol;
 import model.Usuario;
+import repository.RestauranteRepository;
 import repository.UsuarioRepository;
 
 import java.util.List;
@@ -9,10 +11,12 @@ import java.util.List;
 public class UsuarioService {
 
     private UsuarioRepository usuarioRepository;
+    private RestauranteRepository restauranteRepository;
     private Long contadorId = 1L;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, RestauranteRepository restauranteRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.restauranteRepository = restauranteRepository;
     }
 
     public void registrarPropietario(Usuario usuarioAutenticado, String nombre, String apellido, String documento, int edad, String celular, String correo, String clave) {
@@ -49,6 +53,40 @@ public class UsuarioService {
         contadorId++;
 
         System.out.println("Propietario registrado correctamente");
+    }
+
+    public void registrarEmpleado(Usuario usuarioAutenticado, String nombre, String apellido, String documento, int edad, String celular, String correo, String clave, Long idRestaurante) {
+
+        if (usuarioAutenticado == null || usuarioAutenticado.getRol() != Rol.PROPIETARIO) {
+            System.out.println("No tiene permisos para registrar un empleado");
+            return;
+        }
+
+        if (!ValidarService.validarCampoObligatorio(nombre) || !ValidarService.validarCampoObligatorio(apellido)
+                || !ValidarService.validarCampoObligatorio(documento) || !ValidarService.validarCampoObligatorio(celular)
+                || !ValidarService.validarCampoObligatorio(correo) || !ValidarService.validarCampoObligatorio(clave)) {
+            System.out.println("Todos los campos obligatorios deben estar presentes");
+            return;
+        }
+
+        Restaurante restaurante = restauranteRepository.buscarRestaurantePorId(idRestaurante);
+        if (restaurante == null || !restaurante.getIdPropietario().equals(usuarioAutenticado.getId())) {
+            System.out.println("El restaurante indicado no pertenece al propietario autenticado");
+            return;
+        }
+
+        if (usuarioRepository.buscarUsuarioPorCorreo(correo) != null) {
+            System.out.println("El correo ya está registrado");
+            return;
+        }
+
+        String claveEncriptada = PasswordService.encriptarClave(clave);
+
+        Usuario empleado = new Usuario(contadorId, nombre, apellido, documento, edad, celular, correo, claveEncriptada, Rol.EMPLEADO, idRestaurante);
+        usuarioRepository.guardarUsuario(empleado);
+        contadorId++;
+
+        System.out.println("Empleado registrado correctamente");
     }
 
     public void registrarCliente(String nombre, String apellido, String documento, int edad, String celular, String correo, String clave) {
