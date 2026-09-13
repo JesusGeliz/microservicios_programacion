@@ -37,4 +37,8 @@ public class ValidarService {
     public static boolean validarCampoObligatorio(String texto) {
         return texto != null && !texto.trim().isEmpty();
     }
+
+    public static boolean validarPrecioMayorACero(double precio) {
+        return precio > 0;
+    }
 }
